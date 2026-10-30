@@ -1,6 +1,6 @@
 id = "blitzmax"
 name = "BlitzMax"
-version = "0.1.1"
+version = "0.1.2"
 schema_version = 1
 authors = ["Ilya Gavrikov"]
 description = "BlitzMax NG syntax, language server, snippets, build tasks, and debugger."

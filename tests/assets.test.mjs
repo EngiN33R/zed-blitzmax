@@ -8,7 +8,11 @@ test('snippets retain useful templates without VS Code comment variables', () =>
   assert.equal(Object.keys(snippets).length, 30);
   for (const name of ['Function', 'Method', 'Type', 'Struct', 'Interface', 'For EachIn', 'Try']) assert.ok(snippets[name]);
   assert.ok(snippets['Rem Block'].body.join('\n').includes('End Rem'));
-  assert.doesNotMatch(JSON.stringify(snippets), /\$(BLOCK_COMMENT|LINE_COMMENT)/);
+  for (const [name, snippet] of Object.entries(snippets)) {
+    const body = snippet.body.join('\n');
+    assert.doesNotMatch(body, /(?<!\\)\$(?:[A-Za-z_]|\{[A-Za-z_])/, name + ': Zed requires numbered tabstops');
+    assert.doesNotMatch(body, /(?<!\\)\$\{\d+\//, name + ': Zed does not support tabstop transforms');
+  }
 });
 
 test('build tasks save edits, pass file paths as arguments and use consistent modes', () => {

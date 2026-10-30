@@ -55,6 +55,9 @@ the production manifest remains unchanged. Set `BLITZMAX_GRAMMAR_DIR` if the
 grammar checkout is elsewhere. Update `toolsPath` in your project or user
 settings when changing the tools directory.
 
+Template snippets use numbered editable fields for project/file names and dates.
+Zed does not expand VS Code named variables or transforms.
+
 ## Configure BlitzMax
 
 Install [BlitzMax NG](https://blitzmax.org/downloads/). The language server is a
