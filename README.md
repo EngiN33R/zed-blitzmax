@@ -64,7 +64,7 @@ supply the compiler and builder without a language server.
 
 The extension searches in this order:
 
-1. `lsp.blitzmax.binary.path`, if supplied.
+1. `initialization_options.blitzmax.serverPath`, or the same key under `settings`.
 2. `initialization_options.blitzmax.sdkPath`, or the same key under `settings`.
 3. A usable `BMXPATH` installation.
 4. A `bls` alongside `bmk` found on Zed's PATH.
@@ -76,9 +76,9 @@ Put this in your project's `.zed/settings.json` or your Zed user settings:
 {
   "lsp": {
     "blitzmax": {
-      "binary": { "path": "/absolute/path/to/bls" },
       "initialization_options": {
         "blitzmax": {
+          "serverPath": "/absolute/path/to/bls",
           "sdkPath": "/absolute/path/to/BlitzMax",
           "buildMode": "debug"
         }
@@ -89,18 +89,20 @@ Put this in your project's `.zed/settings.json` or your Zed user settings:
 ```
 
 Replace the example paths with your installation paths, including `.exe` on
-Windows where needed. Remove the `binary` override if your SDK contains the
+Windows where needed. Remove `serverPath` if your SDK contains the
 server you want to use. For a locally built standalone server, use the absolute
 path to this checkout's `.local/bin/bls` (or `.local/bin/bls.exe` on Windows).
 The SDK root is the
 directory containing `bin` and `mod`. No SDK is downloaded or upgraded by this
 extension.
 
-For a custom server, add `"binary": { "path": "/absolute/path/to/server",
-"arguments": [], "env": {} }` beside `initialization_options`.
+Use `serverArguments` beside `serverPath` for custom server arguments. Keep
+`lsp.blitzmax.binary.path` and `binary.arguments` unset when using the bridge:
+those are Zed-level overrides that bypass or replace the extension command.
+`binary.env` can still supply additional environment variables.
 
 Per-project settings are read for the current Zed worktree. Initialization options
-are forwarded intact. The current upstream server accepts options such as
+are forwarded after removing extension-only server/tool controls. The current upstream server accepts options such as
 `rootSourcePath`, `buildMode`, `targetPlatform`, `targetArchitecture`,
 `conditionalSymbols`, `requireCoreInterface`, `useDependencySnapshots` and
 `warnImplicitDefaultReturns` under `blitzmax`. Only send options your server
@@ -154,10 +156,10 @@ An alternative server reporting `v0.2` successfully answered completion requests
 through the bridge. If using an SDK that supplies `lsp` instead of `bls`, set:
 
 ```json
-"binary": { "path": "/absolute/path/to/lsp" }
+"serverPath": "/absolute/path/to/lsp"
 ```
 
-under `lsp.blitzmax` and select the SDK it belongs to. Full language features
+under `lsp.blitzmax.initialization_options.blitzmax` and select the SDK it belongs to. Full language features
 require a more capable server, such as the locally built standalone server.
 Syntax highlighting, snippets, tasks and the Tree-sitter outline work independently.
 

@@ -22,3 +22,12 @@ test('build tasks save edits, pass file paths as arguments and use consistent mo
   assert.ok(tasks.some(task => task.tags?.includes('blitzmax-run')));
   assert.ok(read('debug_adapter_schemas/BlitzMax.json').required.includes('program'));
 });
+
+test('example settings retain the extension launcher and debug configurations are arrays', () => {
+  const settings = read('examples/.zed/settings.json.example').lsp.blitzmax;
+  assert.equal(settings.binary?.path, undefined);
+  assert.equal(settings.initialization_options.blitzmax.serverPath, '/absolute/path/to/bls');
+  const debug = read('examples/.zed/debug.json.example');
+  assert.equal(Array.isArray(debug), true);
+  assert.equal(debug[0].adapter, 'BlitzMax');
+});

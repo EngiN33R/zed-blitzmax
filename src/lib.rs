@@ -81,6 +81,8 @@ fn node_command(worktree: &zed::Worktree) -> zed::Result<String> {
 
 fn remove_extension_options(value: &mut Value) {
     if let Some(options) = value.get_mut("blitzmax").and_then(Value::as_object_mut) {
+        options.remove("serverPath");
+        options.remove("serverArguments");
         options.remove("toolsPath");
         options.remove("useCompatibilityBridge");
     }
@@ -109,20 +111,43 @@ fn sdk_setting(settings: &LspSettings) -> Option<String> {
         .map(str::to_owned)
 }
 
+fn server_setting(settings: &LspSettings) -> zed::Result<Option<String>> {
+    extension_setting(settings, "serverPath")
+        .map(|value| {
+            value
+                .as_str()
+                .filter(|path| !path.is_empty())
+                .map(str::to_owned)
+                .ok_or_else(|| "blitzmax.serverPath must be a non-empty executable path".into())
+        })
+        .transpose()
+}
+
+fn server_arguments(settings: &LspSettings) -> zed::Result<Vec<String>> {
+    match extension_setting(settings, "serverArguments") {
+        None => Ok(Vec::new()),
+        Some(value) => value
+            .as_array()
+            .ok_or_else(|| "blitzmax.serverArguments must be an array of strings".to_owned())?
+            .iter()
+            .map(|argument| {
+                argument
+                    .as_str()
+                    .map(str::to_owned)
+                    .ok_or_else(|| "blitzmax.serverArguments must be an array of strings".into())
+            })
+            .collect(),
+    }
+}
 fn sdk_and_server(
     settings: &LspSettings,
     worktree: &zed::Worktree,
 ) -> zed::Result<(String, Option<String>)> {
     let explicit_sdk = sdk_setting(settings);
-    if let Some(path) = settings
-        .binary
-        .as_ref()
-        .and_then(|binary| binary.path.as_ref())
-    {
-        if path.is_empty() {
-            return Err("lsp.blitzmax.binary.path must not be empty".into());
-        }
-        let command = worktree.which(path).unwrap_or_else(|| path.clone());
+    // Zed handles binary.path before calling this extension. serverPath selects
+    // the underlying server while retaining the extension's bridge/downloader.
+    if let Some(path) = server_setting(settings)? {
+        let command = worktree.which(&path).unwrap_or(path);
         let sdk = explicit_sdk.or_else(|| sdk_from_binary(&command));
         return Ok((command, sdk));
     }
@@ -166,7 +191,7 @@ fn sdk_and_server(
         let sdk = sdk_from_binary(&command);
         return Ok((command, sdk));
     }
-    Err("BlitzMax language server not found. Install BlitzMax NG with bin/bls, set lsp.blitzmax.initialization_options.blitzmax.sdkPath to its SDK root, or set lsp.blitzmax.binary.path. See README.md.".into())
+    Err("BlitzMax language server not found. Install BlitzMax NG with bin/bls, set lsp.blitzmax.initialization_options.blitzmax.sdkPath to its SDK root, or set lsp.blitzmax.initialization_options.blitzmax.serverPath. See README.md.".into())
 }
 
 fn options(settings: &LspSettings, sdk: Option<String>) -> Value {
@@ -212,11 +237,7 @@ impl zed::Extension for BlitzMaxExtension {
             env.retain(|(key, _)| !key.eq_ignore_ascii_case("BMXPATH"));
             env.push(("BMXPATH".into(), sdk));
         }
-        let server_args = settings
-            .binary
-            .as_ref()
-            .and_then(|binary| binary.arguments.clone())
-            .unwrap_or_default();
+        let server_args = server_arguments(&settings)?;
         if extension_setting(&settings, "useCompatibilityBridge").and_then(Value::as_bool)
             == Some(false)
         {
@@ -433,5 +454,37 @@ mod tests {
         assert!(value["blitzmax"].get("toolsPath").is_none());
         assert!(value["blitzmax"].get("useCompatibilityBridge").is_none());
         assert_eq!(value["blitzmax"]["buildMode"], "debug");
+    }
+    #[test]
+    fn explicit_server_options_keep_zeds_binary_override_unset() {
+        let settings = LspSettings {
+            initialization_options: Some(json!({"blitzmax":{
+                "serverPath":"X:/standalone server/bls.exe", "serverArguments":["--stdio"],
+                "sdkPath":"C:/sdk", "toolsPath":"/tools"
+            }})),
+            ..Default::default()
+        };
+        assert!(settings.binary.is_none());
+        assert_eq!(
+            server_setting(&settings).unwrap(),
+            Some("X:/standalone server/bls.exe".into())
+        );
+        assert_eq!(server_arguments(&settings).unwrap(), vec!["--stdio"]);
+        let options = options(&settings, None);
+        assert_eq!(options["blitzmax"]["sdkPath"], "C:/sdk");
+        assert!(options["blitzmax"].get("serverPath").is_none());
+        assert!(options["blitzmax"].get("serverArguments").is_none());
+        for value in [json!(""), json!(false)] {
+            let invalid = LspSettings {
+                initialization_options: Some(json!({"blitzmax":{"serverPath":value}})),
+                ..Default::default()
+            };
+            assert!(server_setting(&invalid).is_err());
+        }
+        let invalid = LspSettings {
+            initialization_options: Some(json!({"blitzmax":{"serverArguments":[3]}})),
+            ..Default::default()
+        };
+        assert!(server_arguments(&invalid).is_err());
     }
 }

@@ -1,14 +1,12 @@
 {
   "lsp": {
     "blitzmax": {
-      "binary": {
-        "path": "/absolute/path/to/bls"
-      },
       "initialization_options": {
         "blitzmax": {
           "sdkPath": "/absolute/path/to/BlitzMax",
           "buildMode": "debug",
-          "toolsPath": "/absolute/path/to/zed-blitzmax/tools"
+          "toolsPath": "/absolute/path/to/zed-blitzmax/tools",
+          "serverPath": "/absolute/path/to/bls"
         }
       }
     }
