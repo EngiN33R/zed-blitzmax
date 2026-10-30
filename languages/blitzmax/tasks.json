@@ -1,0 +1,67 @@
+[
+  {
+    "label": "BlitzMax: Build debug",
+    "command": "bmk",
+    "args": ["makeapp", "-quick", "-d", "$ZED_FILE"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "env": { "BMXPATH": "" },
+    "save": "all",
+    "reveal": "always"
+  },
+  {
+    "label": "BlitzMax: Build and run debug",
+    "command": "bmk",
+    "args": ["makeapp", "-quick", "-d", "-x", "$ZED_FILE"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "env": { "BMXPATH": "" },
+    "save": "all",
+    "reveal": "always",
+    "tags": ["blitzmax-run"]
+  },
+  {
+    "label": "BlitzMax: Build release",
+    "command": "bmk",
+    "args": ["makeapp", "-quick", "-r", "$ZED_FILE"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "env": { "BMXPATH": "" },
+    "save": "all"
+  },
+  {
+    "label": "BlitzMax: Build and run release",
+    "command": "bmk",
+    "args": ["makeapp", "-quick", "-r", "-x", "$ZED_FILE"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "env": { "BMXPATH": "" },
+    "save": "all"
+  },
+  {
+    "label": "BlitzMax: Build GUI application",
+    "command": "bmk",
+    "args": ["makeapp", "-quick", "-d", "-t", "gui", "$ZED_FILE"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "env": { "BMXPATH": "" },
+    "save": "all"
+  },
+  {
+    "label": "BlitzMax: Build modules",
+    "command": "bmk",
+    "args": ["makemods", "-quick"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "env": { "BMXPATH": "" },
+    "save": "all"
+  },
+  {
+    "label": "BlitzMax: Rebuild all modules",
+    "command": "bmk",
+    "args": ["makemods", "-a"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "env": { "BMXPATH": "" },
+    "save": "all"
+  },
+  {
+    "label": "BlitzMax: Toolchain version",
+    "command": "bmk",
+    "args": ["-v"],
+    "env": { "BMXPATH": "" }
+  }
+]

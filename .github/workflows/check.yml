@@ -1,0 +1,48 @@
+name: Check extension
+on: [push, pull_request]
+defaults:
+  run:
+    working-directory: zed-blitzmax
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: zed-blitzmax
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '10.8.0'
+          package_json_file: zed-blitzmax/package.json
+      - name: Read production grammar pin
+        id: grammar
+        run: |
+          node --input-type=module <<'JS'
+          import { appendFileSync } from 'node:fs';
+          import { loadManifest } from './scripts/manifest.mjs';
+          const manifest = loadManifest(process.cwd());
+          const repository = new URL(manifest.grammarRepository).pathname.slice(1).replace(/\.git$/, '');
+          appendFileSync(process.env.GITHUB_OUTPUT, `repository=${repository}\nrevision=${manifest.grammarRevision}\n`);
+          JS
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.grammar.outputs.repository }}
+          ref: ${{ steps.grammar.outputs.revision }}
+          path: tree-sitter-blitzmax
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip2
+          components: rustfmt, clippy
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: cargo fmt --all --check
+      - run: pnpm build
+      - run: pnpm tools:package
+      - run: pnpm release:check
+      - uses: actions/upload-artifact@v4
+        with:
+          name: blitzmax-tools
+          path: zed-blitzmax/work/releases/blitzmax-tools-v*.tar.gz*

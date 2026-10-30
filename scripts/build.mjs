@@ -1,0 +1,10 @@
+import { copyFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { checkRelease } from './check-release.mjs';
+const root = fileURLToPath(new URL('../', import.meta.url));
+checkRelease(root);
+execFileSync('cargo', ['build', '--locked', '--release', '--target', 'wasm32-wasip2'], { cwd: root, stdio: 'inherit', windowsHide: true });
+copyFileSync(new URL('../target/wasm32-wasip2/release/zed_blitzmax.wasm', import.meta.url), new URL('../extension.wasm', import.meta.url));
+checkRelease(root, true);
+console.log('Built extension.wasm using the unchanged production manifest.');

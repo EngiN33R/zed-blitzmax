@@ -1,0 +1,20 @@
+name = "BlitzMax"
+grammar = "blitzmax"
+path_suffixes = ["bmx"]
+line_comments = ["' "]
+block_comment = ["Rem", "End Rem"]
+tab_size = 4
+hard_tabs = true
+autoclose_before = ",;:)]}"
+brackets = [
+  { start = "(", end = ")", close = true, newline = false },
+  { start = "[", end = "]", close = true, newline = false },
+  { start = "{", end = "}", close = true, newline = false },
+  { start = "\"", end = "\"", close = true, newline = false, not_in = ["string", "comment"] },
+]
+increase_indent_pattern = '(?i)^\s*(?:(?:type|struct|interface|enum|function|method|extern|for|while|repeat|select|try|else|elseif|case|default|catch|finally)\b.*|if\b.*(?:then)?\s*)$'
+decrease_indent_pattern = '(?i)^\s*(?:end\s*(?:type|struct|interface|enum|function|method|extern|if|select|try|while)|next|wend|until|forever|else|elseif|case|default|catch|finally)\b'
+debuggers = ["BlitzMax"]
+
+[overrides.string]
+word_characters = ["/", "\\", ".", "-"]

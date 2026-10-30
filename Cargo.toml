@@ -1,0 +1,25 @@
+[package]
+name = "zed-blitzmax"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+zed_extension_api = "=0.7.0"
+
+[build-dependencies]
+cc = "1"
+
+[dev-dependencies]
+tree-sitter = "0.25.10"
+tree-sitter-language = "0.1"
+toml = "0.8"
+
+[profile.release]
+lto = true
+opt-level = "s"
+strip = true

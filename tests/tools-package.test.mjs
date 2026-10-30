@@ -1,0 +1,36 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdirSync, mkdtempSync, readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { join } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { createHash } from 'node:crypto';
+import { packageTools } from '../scripts/package-tools.mjs';
+import { ProtocolClient } from './helpers.mjs';
+
+const root = fileURLToPath(new URL('../', import.meta.url));
+test('external tools archive runs independently of extension sources and retains licenses', async t => {
+  const scratch = join(root, 'work/tools-package-tests');
+  mkdirSync(scratch, { recursive: true });
+  const directory = mkdtempSync(join(scratch, 'release with spaces-'));
+  const result = packageTools(root, directory);
+  assert.match(readFileSync(result.checksum, 'utf8'), new RegExp('^' + createHash('sha256').update(readFileSync(result.asset)).digest('hex')));
+  const unpacked = join(directory, 'unpacked');
+  mkdirSync(unpacked);
+  execFileSync('tar', ['-xzf', result.asset, '-C', unpacked], { windowsHide: true });
+  assert.match(readFileSync(join(unpacked, 'LICENSE'), 'utf8'), /Permission is hereby granted/);
+  assert.equal(JSON.parse(readFileSync(join(unpacked, 'package.json'), 'utf8')).version, result.version);
+  const bridge = await import(pathToFileURL(join(unpacked, 'blitzmax-lsp.mjs')).href);
+  assert.equal(bridge.normalizeServerMessage({ method: 'workspace/configuration', params: [] }, new Map()).params.items.length, 0);
+  const client = new ProtocolClient(process.execPath, [join(unpacked, 'blitzmax-dap.mjs')]);
+  t.after(() => client.close());
+  const capabilities = await client.request('initialize', { adapterID: 'BlitzMax' });
+  assert.equal(capabilities.supportsConfigurationDoneRequest, true);
+  const launch = client.request('launch', { program: process.execPath, args: [join(root, 'tests/fixtures/fake-runtime.mjs')] });
+  await client.request('configurationDone');
+  await launch;
+  await client.event('stopped');
+  const stack = await client.request('stackTrace', { threadId: 1 });
+  assert.equal(stack.stackFrames[0].line, 5);
+  await client.request('disconnect', { terminateDebuggee: true });
+});

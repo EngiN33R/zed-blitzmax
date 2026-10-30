@@ -1,0 +1,31 @@
+name: Release external BlitzMax tools
+on:
+  push:
+    tags: ['tools-v*']
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '10.8.0'
+      - run: pnpm install --frozen-lockfile
+      - name: Verify tools tag
+        run: |
+          node --input-type=module <<'JS'
+          import { readFileSync } from 'node:fs';
+          const { version } = JSON.parse(readFileSync('tools/package.json', 'utf8'));
+          if (process.env.GITHUB_REF_NAME !== `tools-v${version}`) throw new Error('Tools tag/package version mismatch');
+          JS
+      - run: node --test tests/tools-package.test.mjs tests/dap.test.mjs tests/lsp.test.mjs tests/protocol.test.mjs
+      - run: pnpm tools:package
+      - name: Publish external tools assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" work/releases/blitzmax-tools-v*.tar.gz* --verify-tag --generate-notes

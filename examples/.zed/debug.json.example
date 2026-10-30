@@ -1,0 +1,23 @@
+{
+  "label": "BlitzMax: Debug example (Windows)",
+  "adapter": "BlitzMax",
+  "build": {
+    "command": "bmk",
+    "args": [
+      "makeapp",
+      "-quick",
+      "-d",
+      "-o",
+      "$ZED_WORKTREE_ROOT/debug.exe",
+      "$ZED_WORKTREE_ROOT/debug.bmx"
+    ],
+    "env": {
+      "BMXPATH": ""
+    },
+    "cwd": "$ZED_WORKTREE_ROOT"
+  },
+  "request": "launch",
+  "program": "$ZED_WORKTREE_ROOT/debug.exe",
+  "cwd": "$ZED_WORKTREE_ROOT",
+  "args": []
+}

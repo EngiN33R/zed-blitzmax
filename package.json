@@ -1,0 +1,27 @@
+{
+  "name": "zed-blitzmax",
+  "version": "0.1.0",
+  "private": true,
+  "description": "BlitzMax NG language support for Zed",
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@10.8.0",
+  "scripts": {
+    "grammar:generate": "node scripts/grammar.mjs generate --abi 14",
+    "grammar:test": "node scripts/grammar.mjs test",
+    "prepare:dev": "node scripts/prepare-dev.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:integration": "node --test tests/integration/*.test.mjs",
+    "test:wasm": "node --test tests/wasm/*.test.mjs",
+    "server:build": "node scripts/build-server.mjs",
+    "check": "pnpm grammar:generate && pnpm grammar:test && pnpm test && cargo test && cargo clippy --all-targets -- -D warnings",
+    "build": "node scripts/build.mjs",
+    "tools:package": "node scripts/package-tools.mjs",
+    "release:check": "node scripts/check-release.mjs"
+  },
+  "devDependencies": {
+    "tree-sitter-cli": "0.25.10",
+    "web-tree-sitter": "0.25.10"
+  }
+}

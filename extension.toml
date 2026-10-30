@@ -1,0 +1,19 @@
+id = "blitzmax"
+name = "BlitzMax"
+version = "0.1.0"
+schema_version = 1
+authors = ["Ilya Gavrikov"]
+description = "BlitzMax NG syntax, language server, snippets, build tasks, and debugger."
+repository = "https://github.com/EngiN33R/zed-blitzmax"
+snippets = "snippets/blitzmax.json"
+
+[grammars.blitzmax]
+repository = "https://github.com/EngiN33R/tree-sitter-blitzmax"
+rev = "495936baa26b9d09aeb3a6469a5597280e66ad61"
+
+[language_servers.blitzmax]
+languages = ["BlitzMax"]
+language_ids = { "BlitzMax" = "blitzmax" }
+
+[debug_adapters.BlitzMax]
+schema_path = "debug_adapter_schemas/BlitzMax.json"

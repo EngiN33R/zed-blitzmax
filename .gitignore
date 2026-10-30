@@ -1,0 +1,14 @@
+/node_modules/
+/target/
+/.grammar-repository/
+/grammars/
+/extension.wasm
+/work/
+/.local/
+/log.lsp.txt
+/examples/.zed/settings.json
+/examples/.zed/debug.json
+/examples/.zed/tasks.json
+*.exe
+*.dll
+**/.bmx/

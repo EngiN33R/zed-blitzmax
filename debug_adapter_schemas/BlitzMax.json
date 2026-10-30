@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BlitzMax debug launch",
+  "type": "object",
+  "required": ["request", "program"],
+  "properties": {
+    "request": { "type": "string", "enum": ["launch"], "default": "launch" },
+    "program": { "type": "string", "description": "Compiled BlitzMax executable built with bmk makeapp -d. Use DebugStop statements to stop execution." },
+    "cwd": { "type": "string", "description": "Working directory for the program." },
+    "args": { "type": "array", "items": { "type": "string" }, "default": [] },
+    "env": { "type": "object", "additionalProperties": { "type": "string" } }
+  },
+  "additionalProperties": false
+}
